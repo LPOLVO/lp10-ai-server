@@ -12,12 +12,16 @@ app.post('/api/ask', async (req, res) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: msg }] }]
+          contents: [{ role: "user", parts: [{ text: msg }] }]
         })
       }
     );
     const d = await r.json();
-    res.send(d.candidates[0].content.parts[0].text);
+    if (d.candidates && d.candidates[0]) {
+      res.send(d.candidates[0].content.parts[0].text);
+    } else {
+      res.send("Error: " + JSON.stringify(d));
+    }
   } catch(e) {
     res.status(500).send('Error: ' + e.message);
   }
