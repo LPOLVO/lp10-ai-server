@@ -6,22 +6,23 @@ app.post('/api/ask', async (req, res) => {
   try {
     const msg = req.body.message;
     if (!msg) return res.status(400).send('No message');
-    const r = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + process.env.GEMINI_API_KEY,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: msg }] }]
-        })
-      }
-    );
+    const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + process.env.GROQ_API_KEY
+      },
+      body: JSON.stringify({
+        model: "llama3-8b-8192",
+        messages: [
+          { role: "system", content: "You are a helpful assistant. Always reply in the same language the user writes in." },
+          { role: "user", content: msg }
+        ],
+        max_tokens: 300
+      })
+    });
     const d = await r.json();
-    if (d.candidates && d.candidates[0]) {
-      res.send(d.candidates[0].content.parts[0].text);
-    } else {
-      res.send("Error: " + JSON.stringify(d));
-    }
+    res.send(d.choices[0].message.content);
   } catch(e) {
     res.status(500).send('Error: ' + e.message);
   }
