@@ -28,4 +28,31 @@ app.post('/api/ask', async (req, res) => {
   }
 });
 
+app.post('/log', async (req, res) => {
+  try {
+    const { username, game, jobId } = req.body;
+    const WEBHOOK = process.env.DISCORD_WEBHOOK;
+    await fetch(WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        embeds: [{
+          title: "💎 LP10 HUB — New User",
+          color: 0x2196F3,
+          fields: [
+            { name: "👤 Username", value: username || "Unknown", inline: true },
+            { name: "🎮 Game", value: game || "Unknown", inline: true },
+            { name: "🔗 Job ID", value: "```" + (jobId || "Unknown") + "```", inline: false }
+          ],
+          footer: { text: "LP10 HUB by @LPOLVO" },
+          timestamp: new Date().toISOString()
+        }]
+      })
+    });
+    res.send("ok");
+  } catch(e) {
+    res.status(500).send("error");
+  }
+});
+
 app.listen(process.env.PORT || 3000, () => console.log("LP10 AI running!"));
