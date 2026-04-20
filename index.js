@@ -30,21 +30,25 @@ app.post('/api/ask', async (req, res) => {
 
 app.post('/log', async (req, res) => {
   try {
-    const { username, userId, game, jobId } = req.body;
+    const { username, userId, game, jobId, scriptName } = req.body;
     const WEBHOOK = process.env.DISCORD_WEBHOOK;
     const profileLink = userId
       ? "[" + username + "](https://www.roblox.com/users/" + userId + "/profile)"
       : username || "Unknown";
+
     await fetch(WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         embeds: [{
-          title: "💎 LP10 HUB — New User",
-          color: 0x2196F3,
+          title: scriptName && scriptName !== "Just opened hub"
+            ? "▶️ LP10 HUB — Script Executed"
+            : "👁 LP10 HUB — New User",
+          color: scriptName && scriptName !== "Just opened hub" ? 0x00FF88 : 0x2196F3,
           fields: [
             { name: "👤 Username", value: profileLink, inline: true },
             { name: "🎮 Game", value: game || "Unknown", inline: true },
+            { name: "📜 Script", value: scriptName || "Just opened hub", inline: false },
             { name: "🔗 Job ID", value: "```" + (jobId || "Unknown") + "```", inline: false }
           ],
           footer: { text: "LP10 HUB by @LPOLVO" },
