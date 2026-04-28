@@ -30,7 +30,7 @@ app.post('/api/ask', async (req, res) => {
 
 app.post('/log', async (req, res) => {
   try {
-    const { username, userId, game, jobId, scriptName, placeId, executor, sessionTime, event } = req.body;
+    const { username, userId, game, jobId, scriptName, placeId } = req.body;
     const WEBHOOK = process.env.DISCORD_WEBHOOK;
 
     const profileLink = userId
@@ -42,34 +42,15 @@ app.post('/log', async (req, res) => {
       : (game || "Unknown");
 
     const joinLink = placeId && jobId
-      ? "[🚀 Join Server](https://www.roblox.com/games/" + placeId + "?gameInstanceId=" + jobId + ")"
+      ? "[🎮 Join Server](https://www.roblox.com/games/" + placeId + "?gameInstanceId=" + jobId + ")"
       : null;
-
-    // Choose title and color based on event
-    let title = "👁 LP10 HUB — New User";
-    let color = 0x2196F3;
-
-    if (event === "close") {
-      title = "🚪 LP10 HUB — User Left";
-      color = 0xFF4444;
-    } else if (scriptName && scriptName !== "Just opened hub") {
-      title = "▶️ LP10 HUB — Script Executed";
-      color = 0x00FF88;
-    }
 
     const fields = [
       { name: "👤 Username", value: profileLink, inline: true },
       { name: "🎮 Game", value: gameLink, inline: true },
-      { name: "⚙️ Executor", value: executor || "Unknown", inline: true },
+      { name: "📜 Script", value: scriptName || "Just opened hub", inline: false },
+      { name: "🔗 Job ID", value: "```" + (jobId || "Unknown") + "```", inline: false },
     ];
-
-    if (event === "close" && sessionTime) {
-      fields.push({ name: "⏱ Used for", value: sessionTime, inline: false });
-    } else if (event !== "close") {
-      fields.push({ name: "📜 Script", value: scriptName || "Just opened hub", inline: false });
-    }
-
-    fields.push({ name: "🔗 Job ID", value: "```" + (jobId || "Unknown") + "```", inline: false });
 
     if (joinLink) {
       fields.push({ name: "🚀 Join", value: joinLink, inline: false });
@@ -80,8 +61,10 @@ app.post('/log', async (req, res) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         embeds: [{
-          title: title,
-          color: color,
+          title: scriptName && scriptName !== "Just opened hub"
+            ? "▶️ LP10 HUB — Script Executed"
+            : "👁 LP10 HUB — New User",
+          color: scriptName && scriptName !== "Just opened hub" ? 0x00FF88 : 0x2196F3,
           fields: fields,
           footer: { text: "LP10 HUB by @LPOLVO" },
           timestamp: new Date().toISOString()
